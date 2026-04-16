@@ -8,8 +8,8 @@ const galleryItems = [...EVENT.galleryImages, ...EVENT.galleryImages];
 
 export function PhotoGallerySection() {
   return (
-    <section id="gallery" className="overflow-hidden pb-24 sm:pb-28">
-      <div className="section-shell space-y-8">
+    <section id="gallery" className="scroll-mt-28 overflow-hidden pb-24 sm:scroll-mt-32 sm:pb-28">
+      <div className="section-shell space-y-6 sm:space-y-8">
         <Reveal>
           <SectionHeading
             eyebrow="Gallery"
@@ -22,7 +22,7 @@ export function PhotoGallerySection() {
         </Reveal>
       </div>
 
-      <Reveal className="relative left-1/2 mt-10 w-screen -translate-x-1/2 overflow-hidden py-4 sm:mt-12 sm:py-6">
+      <Reveal className="relative left-1/2 mt-8 w-screen -translate-x-1/2 overflow-hidden py-4 sm:mt-12 sm:py-6">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-20 bg-[linear-gradient(90deg,#050507,transparent)] sm:w-28" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-20 bg-[linear-gradient(270deg,#050507,transparent)] sm:w-28" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,_rgba(180,31,50,0.12),_transparent_42%)]" />
@@ -40,6 +40,8 @@ export function PhotoGallerySection() {
                   alt={`BFC fight-night gallery image ${((index % EVENT.galleryImages.length) + 1).toString().padStart(2, "0")}`}
                   width={520}
                   height={620}
+                  priority={index === 0}
+                  sizes="(max-width: 639px) 76vw, 26rem"
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.24))]" />

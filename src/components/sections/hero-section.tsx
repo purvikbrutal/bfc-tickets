@@ -17,7 +17,7 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="noise-overlay relative overflow-hidden pb-28 pt-34 sm:pb-36 sm:pt-42 lg:pb-44 lg:pt-52"
+      className="noise-overlay relative scroll-mt-28 overflow-hidden pb-24 pt-30 sm:scroll-mt-32 sm:pb-36 sm:pt-42 lg:pb-44 lg:pt-52"
     >
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[linear-gradient(180deg,_#060608_0%,_#070709_38%,_#09080a_64%,_#050507_100%)]" />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_24%,_rgba(180,31,50,0.24),_transparent_28%),radial-gradient(circle_at_50%_44%,_rgba(180,31,50,0.12),_transparent_38%)]" />
@@ -70,19 +70,19 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10 flex flex-col gap-3 sm:mt-12 sm:flex-row"
+            className="mt-10 flex w-full max-w-xs flex-col gap-3 sm:mt-12 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center"
           >
             <button
               type="button"
               onClick={openBooking}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_50px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 hover:bg-white/92"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_50px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 hover:bg-white/92 sm:w-auto"
             >
               Book Tickets
               <ArrowRightIcon className="size-4" />
             </button>
             <Link
               href="#venue"
-              className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white/84 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/8"
+              className="inline-flex w-full items-center justify-center rounded-full border border-white/12 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white/84 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/8 sm:w-auto"
             >
               View Details
             </Link>

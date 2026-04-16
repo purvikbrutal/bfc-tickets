@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       email: payload.email,
       phone: payload.phone,
       quantity: payload.quantity,
+      attendeeNames: payload.attendeeNames,
       amountPaise,
       currency: order.currency,
     });

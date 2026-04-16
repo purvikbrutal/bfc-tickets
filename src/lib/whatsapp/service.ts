@@ -28,7 +28,7 @@ export async function sendWhatsappConfirmation(input: { booking: BookingRecord }
     return {
       sent: false,
       skipped: true,
-      reason: "Twilio WhatsApp placeholder is not configured. Add the Twilio WhatsApp env vars to enable delivery.",
+      reason: "Twilio WhatsApp is not configured. Add the Twilio WhatsApp env vars to enable delivery.",
     };
   }
 
@@ -48,7 +48,7 @@ export async function sendWhatsappConfirmation(input: { booking: BookingRecord }
       `${EVENT.brand} confirmation`,
       `Booking ID: ${input.booking.bookingId}`,
       `Tickets: ${input.booking.quantity}`,
-      `Date: ${EVENT.dateLabel} • ${EVENT.timeLabel}`,
+      `Date: ${EVENT.dateLabel} at ${EVENT.timeLabel}`,
       `Ticket link: ${ticket.pageUrl}`,
     ].join("\n"),
   });

@@ -9,7 +9,7 @@ export function BookingSection() {
   const { openBooking } = useBookingModal();
 
   return (
-    <section id="booking" className="pb-24 sm:pb-28">
+    <section id="booking" className="scroll-mt-28 pb-24 sm:scroll-mt-32 sm:pb-28">
       <div className="section-shell">
         <Reveal className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <SectionHeading
@@ -20,7 +20,7 @@ export function BookingSection() {
             className="max-w-3xl"
           />
 
-          <div className="mt-8 flex flex-col items-center gap-4 sm:mt-10 sm:flex-row">
+          <div className="mt-8 sm:mt-10">
             <button
               type="button"
               onClick={openBooking}
@@ -28,14 +28,6 @@ export function BookingSection() {
             >
               Book Now
             </button>
-
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/34 sm:text-xs">
-              {EVENT.priceLabel}
-              <span className="mx-3 text-white/18" aria-hidden="true">
-                /
-              </span>
-              {EVENT.discountLabel}
-            </p>
           </div>
         </Reveal>
       </div>

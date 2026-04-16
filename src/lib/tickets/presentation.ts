@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 
-import type { BookingRecord } from "@/lib/bookings/repository";
+import type { BookingRecord, BookingWithTickets } from "@/lib/bookings/repository";
 import { EVENT } from "@/lib/event";
 import { buildAbsoluteUrl, buildTicketDownloadPath, buildTicketPagePath, formatRupees } from "@/lib/utils";
 
@@ -21,7 +21,7 @@ export type TicketPresentation = {
   qrCodeDataUrl: string;
 };
 
-export async function buildTicketPresentation(booking: BookingRecord): Promise<TicketPresentation> {
+export async function buildTicketPresentation(booking: BookingRecord | BookingWithTickets): Promise<TicketPresentation> {
   if (!booking.bookingId || !booking.ticketToken) {
     throw new Error("Booking is missing a booking ID or ticket token.");
   }
@@ -43,7 +43,7 @@ export async function buildTicketPresentation(booking: BookingRecord): Promise<T
     dateLabel: EVENT.dateLabel,
     timeLabel: EVENT.timeLabel,
     venueName: EVENT.venueName,
-    attendeeName: booking.fullName,
+    attendeeName: "tickets" in booking ? booking.tickets[0]?.attendeeName ?? booking.fullName : booking.fullName,
     phone: booking.phone,
     quantity: booking.quantity,
     bookingId: booking.bookingId,

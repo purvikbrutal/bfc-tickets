@@ -183,7 +183,7 @@ main {
 }
 
 .gallery-card {
-  width: min(24rem, 72vw);
+  width: min(18rem, 76vw);
   aspect-ratio: 0.84;
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.3),

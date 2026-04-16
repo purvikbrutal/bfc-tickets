@@ -22,8 +22,17 @@ create table if not exists bookings (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists tickets (
+  ticket_id uuid primary key default gen_random_uuid(),
+  booking_id uuid not null references bookings(id) on delete cascade,
+  ticket_code text not null unique,
+  attendee_name text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists bookings_status_idx on bookings (status);
 create index if not exists bookings_created_at_idx on bookings (created_at desc);
+create index if not exists tickets_booking_id_idx on tickets (booking_id);
 
 create or replace function set_updated_at()
 returns trigger

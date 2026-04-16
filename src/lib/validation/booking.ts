@@ -1,14 +1,25 @@
 import { z } from "zod";
 
-export const bookingRequestSchema = z.object({
-  fullName: z.string().trim().min(2, "Full name is required").max(80, "Use a shorter name"),
-  email: z.string().trim().email("Enter a valid email address"),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\+?[0-9][0-9\s-]{8,16}$/, "Enter a valid phone number"),
-  quantity: z.coerce.number().int().min(1).max(10),
-});
+export const bookingRequestSchema = z
+  .object({
+    fullName: z.string().trim().min(2, "Full name is required").max(80, "Use a shorter name"),
+    email: z.string().trim().email("Enter a valid email address"),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^\+?[0-9][0-9\s-]{8,16}$/, "Enter a valid phone number"),
+    quantity: z.coerce.number().int().min(1).max(10),
+    attendeeNames: z.array(z.string().trim().max(80, "Use a shorter attendee name")).max(10).default([]),
+  })
+  .superRefine((value, context) => {
+    if (value.attendeeNames.length !== value.quantity) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["attendeeNames"],
+        message: "Attendee details must match the number of tickets selected.",
+      });
+    }
+  });
 
 export const paymentVerificationSchema = z.object({
   orderId: z.string().min(1),

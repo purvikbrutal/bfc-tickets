@@ -59,7 +59,7 @@ export const FAQS = [
   },
   {
     question: "Will I get WhatsApp confirmation?",
-    answer: "A WhatsApp confirmation flow placeholder is ready to connect.",
+    answer: "Yes, when WhatsApp delivery is enabled for the event you will receive a confirmation with your ticket link.",
   },
   {
     question: "Can I show the digital ticket at entry?",

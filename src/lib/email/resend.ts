@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-import type { BookingRecord } from "@/lib/bookings/repository";
+import type { BookingWithTickets } from "@/lib/bookings/repository";
 import { EVENT } from "@/lib/event";
 import { buildTicketPresentation } from "@/lib/tickets/presentation";
 
@@ -66,17 +66,18 @@ function renderBookingEmailHtml(input: {
 }
 
 export async function sendBookingConfirmationEmail(input: {
-  booking: BookingRecord;
+  booking: BookingWithTickets;
   pdfBuffer?: Buffer | null;
 }): Promise<DeliveryResult> {
   const client = getResendClient();
   const fromEmail = process.env.EMAIL_FROM;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-  if (!client || !fromEmail) {
+  if (!client || !fromEmail || !siteUrl) {
     return {
       sent: false,
       skipped: true,
-      reason: "Resend is not configured. Add RESEND_API_KEY and EMAIL_FROM to enable email delivery.",
+      reason: "Resend is not configured. Add RESEND_API_KEY, EMAIL_FROM, and NEXT_PUBLIC_SITE_URL to enable email delivery.",
     };
   }
 
@@ -85,27 +86,44 @@ export async function sendBookingConfirmationEmail(input: {
   }
 
   const ticket = await buildTicketPresentation(input.booking);
+  const deliveries = input.booking.tickets.length
+    ? input.booking.tickets.map((ticketRecord) => ({
+        attendeeName: ticketRecord.attendeeName ?? input.booking.fullName,
+        quantity: 1,
+        subject: `${EVENT.name} Ticket - ${input.booking.bookingId} - ${ticketRecord.ticketCode}`,
+      }))
+    : [
+        {
+          attendeeName: input.booking.fullName,
+          quantity: input.booking.quantity,
+          subject: `${EVENT.name} Ticket - ${input.booking.bookingId}`,
+        },
+      ];
 
-  await client.emails.send({
-    from: fromEmail,
-    to: [input.booking.email],
-    subject: `${EVENT.name} Ticket - ${input.booking.bookingId}`,
-    html: renderBookingEmailHtml({
-      attendeeName: input.booking.fullName,
-      bookingId: input.booking.bookingId,
-      ticketPageUrl: ticket.pageUrl,
-      downloadUrl: ticket.downloadUrl,
-      quantity: input.booking.quantity,
-    }),
-    attachments: input.pdfBuffer
-      ? [
-          {
-            filename: `${input.booking.bookingId}.pdf`,
-            content: input.pdfBuffer.toString("base64"),
-          },
-        ]
-      : undefined,
-  });
+  await Promise.all(
+    deliveries.map((delivery) =>
+      client.emails.send({
+        from: fromEmail,
+        to: [input.booking.email],
+        subject: delivery.subject,
+        html: renderBookingEmailHtml({
+          attendeeName: delivery.attendeeName,
+          bookingId: input.booking.bookingId!,
+          ticketPageUrl: ticket.pageUrl,
+          downloadUrl: ticket.downloadUrl,
+          quantity: delivery.quantity,
+        }),
+        attachments: input.pdfBuffer
+          ? [
+              {
+                filename: `${input.booking.bookingId}.pdf`,
+                content: input.pdfBuffer.toString("base64"),
+              },
+            ]
+          : undefined,
+      }),
+    ),
+  );
 
   return { sent: true };
 }

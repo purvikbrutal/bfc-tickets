@@ -1,8 +1,8 @@
 "use client";
 
 import { useDeferredValue, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { CheckCircleIcon } from "@/components/shared/icons";
 import { EVENT } from "@/lib/event";
 import { formatRupees } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ type FormState = {
   email: string;
   phone: string;
   quantity: number;
+  attendeeNames: string[];
 };
 
 const initialState: FormState = {
@@ -22,84 +23,179 @@ const initialState: FormState = {
   email: "",
   phone: "",
   quantity: 1,
+  attendeeNames: [""],
 };
 
+type SubmissionPhase = "idle" | "creating-order" | "opening-checkout" | "verifying";
+
+type OrderResponse = {
+  orderId?: string;
+  amount?: number;
+  currency?: string;
+  error?: string;
+};
+
+type VerifyResponse = {
+  success?: boolean;
+  ticketPageUrl?: string;
+  error?: string;
+};
+
+// Razorpay checkout.js must be loaded globally, ideally in src/app/layout.tsx:
+// <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 export function BookingForm({ onClose }: BookingFormProps) {
+  const router = useRouter();
   const [formState, setFormState] = useState<FormState>(initialState);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
+  const [submissionPhase, setSubmissionPhase] = useState<SubmissionPhase>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const deferredQuantity = useDeferredValue(formState.quantity);
   const totalLabel = formatRupees(EVENT.price * deferredQuantity);
+  const isBusy = submissionPhase !== "idle";
+  const statusMessage =
+    submissionPhase === "creating-order"
+      ? "Creating your Razorpay order..."
+      : submissionPhase === "opening-checkout"
+        ? "Opening secure checkout..."
+        : submissionPhase === "verifying"
+          ? "Verifying payment and preparing your ticket..."
+          : null;
 
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setFormState((current) => ({ ...current, [field]: value }));
   }
 
-  function reopenForm() {
-    setIsComplete(false);
-    setIsSubmitting(false);
+  function resizeAttendeeNames(attendeeNames: string[], quantity: number) {
+    return Array.from({ length: quantity }, (_, index) => attendeeNames[index] ?? "");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function updateQuantity(quantity: number) {
+    setFormState((current) => ({
+      ...current,
+      quantity,
+      attendeeNames: resizeAttendeeNames(current.attendeeNames, quantity),
+    }));
+  }
+
+  function updateAttendeeName(index: number, value: string) {
+    setFormState((current) => {
+      const attendeeNames = resizeAttendeeNames(current.attendeeNames, current.quantity);
+      attendeeNames[index] = value;
+
+      return {
+        ...current,
+        attendeeNames,
+      };
+    });
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
+    setErrorMessage(null);
 
-    window.setTimeout(() => {
-      setIsSubmitting(false);
-      setIsComplete(true);
-    }, 650);
-  }
+    if (!event.currentTarget.reportValidity()) {
+      return;
+    }
 
-  if (isComplete) {
-    return (
-      <div className="rounded-[30px] border border-emerald-300/14 bg-emerald-400/[0.06] p-6 sm:p-7">
-        <div className="inline-flex items-center gap-3 rounded-full border border-emerald-200/14 bg-emerald-300/[0.08] px-4 py-2 text-sm font-medium text-emerald-100/88">
-          <CheckCircleIcon className="size-4" />
-          Details captured
-        </div>
+    if (typeof window.Razorpay === "undefined") {
+      setErrorMessage(
+        "Razorpay checkout.js is not loaded. Add the script tag to src/app/layout.tsx before using this form.",
+      );
+      return;
+    }
 
-        <h3 className="mt-5 font-display text-3xl font-semibold tracking-[-0.05em] text-white sm:text-[2.2rem]">
-          Your booking flow is ready.
-        </h3>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-white/62 sm:text-base">
-          We have the UI in place for {formState.fullName || "your"} seat request. Payment, booking ID, and ticket
-          delivery will plug into this next.
-        </p>
+    setSubmissionPhase("creating-order");
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-4">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/34">Email</p>
-            <p className="mt-2 text-sm text-white/80 sm:text-base">{formState.email}</p>
-          </div>
-          <div className="rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-4">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/34">Tickets</p>
-            <p className="mt-2 text-sm text-white/80 sm:text-base">
-              {formState.quantity} seat{formState.quantity > 1 ? "s" : ""} / {totalLabel}
-            </p>
-          </div>
-        </div>
+    try {
+      const orderResponse = await fetch("/api/payments/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formState),
+      });
 
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={reopenForm}
-            className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white/86 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/10"
-          >
-            Edit Details
-          </button>
-          {onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-black hover:-translate-y-0.5 hover:bg-white/92"
-            >
-              Close
-            </button>
-          ) : null}
-        </div>
-      </div>
-    );
+      const orderData = (await orderResponse.json().catch(() => null)) as OrderResponse | null;
+
+      if (!orderResponse.ok || !orderData?.orderId || !orderData.currency) {
+        throw new Error(orderData?.error ?? "Unable to create Razorpay order.");
+      }
+
+      setSubmissionPhase("opening-checkout");
+
+      const checkout = new window.Razorpay({
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
+        amount: orderData.amount ?? EVENT.price * formState.quantity * 100,
+        currency: orderData.currency,
+        name: EVENT.brand,
+        description: `${EVENT.name} ticket booking`,
+        order_id: orderData.orderId,
+        prefill: {
+          name: formState.fullName,
+          email: formState.email,
+          contact: formState.phone,
+        },
+        notes: {
+          event: EVENT.name,
+          email: formState.email,
+          phone: formState.phone,
+          quantity: String(formState.quantity),
+        },
+        theme: {
+          color: "#b41f32",
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmissionPhase("idle");
+            setErrorMessage(null);
+          },
+        },
+        handler: async (response) => {
+          setSubmissionPhase("verifying");
+          setErrorMessage(null);
+
+          try {
+            const verifyResponse = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = (await verifyResponse.json().catch(() => null)) as VerifyResponse | null;
+
+            if (!verifyResponse.ok || !verifyData?.success || !verifyData.ticketPageUrl) {
+              throw new Error(verifyData?.error ?? "Payment succeeded, but ticket verification failed.");
+            }
+
+            const ticketUrl = new URL(verifyData.ticketPageUrl, window.location.href);
+            router.replace(`${ticketUrl.pathname}${ticketUrl.search}${ticketUrl.hash}`);
+          } catch (verifyError) {
+            setSubmissionPhase("idle");
+            setErrorMessage(verifyError instanceof Error ? verifyError.message : "Unable to verify payment.");
+          }
+        },
+      });
+
+      checkout.on("payment.failed", (response) => {
+        setSubmissionPhase("idle");
+        setErrorMessage(
+          response.error?.description ??
+            response.error?.reason ??
+            "Payment failed. Please try again.",
+        );
+      });
+
+      checkout.open();
+    } catch (submitError) {
+      setSubmissionPhase("idle");
+      setErrorMessage(submitError instanceof Error ? submitError.message : "Unable to start checkout.");
+    }
   }
 
   return (
@@ -111,6 +207,7 @@ export function BookingForm({ onClose }: BookingFormProps) {
             required
             value={formState.fullName}
             onChange={(event) => updateField("fullName", event.target.value)}
+            disabled={isBusy}
             className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none placeholder:text-white/22 focus:border-rose-200/34 focus:bg-white/[0.07]"
             placeholder="Enter your full name"
           />
@@ -123,6 +220,7 @@ export function BookingForm({ onClose }: BookingFormProps) {
             type="email"
             value={formState.email}
             onChange={(event) => updateField("email", event.target.value)}
+            disabled={isBusy}
             className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none placeholder:text-white/22 focus:border-rose-200/34 focus:bg-white/[0.07]"
             placeholder="you@example.com"
           />
@@ -136,6 +234,7 @@ export function BookingForm({ onClose }: BookingFormProps) {
             required
             value={formState.phone}
             onChange={(event) => updateField("phone", event.target.value)}
+            disabled={isBusy}
             className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none placeholder:text-white/22 focus:border-rose-200/34 focus:bg-white/[0.07]"
             placeholder="+91 98765 43210"
           />
@@ -145,7 +244,8 @@ export function BookingForm({ onClose }: BookingFormProps) {
           <span className="text-sm font-medium text-white/74">Ticket Quantity</span>
           <select
             value={String(formState.quantity)}
-            onChange={(event) => updateField("quantity", Number(event.target.value))}
+            onChange={(event) => updateQuantity(Number(event.target.value))}
+            disabled={isBusy}
             className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none focus:border-rose-200/34 focus:bg-white/[0.07]"
           >
             {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
@@ -155,6 +255,37 @@ export function BookingForm({ onClose }: BookingFormProps) {
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="rounded-[26px] border border-white/8 bg-white/[0.03] px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-white/74">Attendee Names</p>
+            <p className="mt-1 text-xs leading-6 text-white/42">
+              Optional. Add the name for each seat now, or leave blank and we&apos;ll use the buyer name as the default.
+            </p>
+          </div>
+          <p className="text-[11px] uppercase tracking-[0.24em] text-white/34">
+            {formState.quantity} ticket{formState.quantity > 1 ? "s" : ""}
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {formState.attendeeNames.map((attendeeName, index) => (
+            <label key={index} className="space-y-2.5">
+              <span className="text-sm font-medium text-white/74">
+                {formState.quantity > 1 ? `Ticket ${index + 1} Attendee` : "Attendee Name"}
+              </span>
+              <input
+                value={attendeeName}
+                onChange={(event) => updateAttendeeName(index, event.target.value)}
+                disabled={isBusy}
+                className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none placeholder:text-white/22 focus:border-rose-200/34 focus:bg-white/[0.07]"
+                placeholder={index === 0 ? "Optional attendee name" : `Optional attendee ${index + 1} name`}
+              />
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 rounded-[26px] border border-white/8 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
@@ -176,15 +307,42 @@ export function BookingForm({ onClose }: BookingFormProps) {
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isBusy}
         className="inline-flex w-full items-center justify-center rounded-full bg-white px-6 py-4 text-sm font-semibold text-black hover:-translate-y-0.5 hover:bg-white/92 disabled:cursor-not-allowed disabled:opacity-72"
       >
-        {isSubmitting ? "Saving details..." : "Reserve My Seat"}
+        {submissionPhase === "creating-order"
+          ? "Creating Razorpay order..."
+          : submissionPhase === "opening-checkout"
+            ? "Open checkout to pay"
+            : submissionPhase === "verifying"
+              ? "Verifying payment..."
+              : "Reserve My Seat"}
       </button>
 
-      <p className="text-center text-xs uppercase tracking-[0.22em] text-white/28">
-        Payment, booking ID, PDF ticket, email, and WhatsApp connect next.
-      </p>
+      <div aria-live="polite" className="space-y-2 text-center">
+        {errorMessage ? (
+          <p className="rounded-full border border-rose-300/16 bg-rose-400/[0.08] px-4 py-3 text-xs leading-6 text-rose-100/88">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <p className="text-xs uppercase tracking-[0.22em] text-white/28">
+          Secure payment opens in Razorpay, then your ticket page is delivered after successful verification.
+        </p>
+
+        {statusMessage ? <p className="text-xs text-white/54">{statusMessage}</p> : null}
+
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isBusy}
+            className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white/86 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
     </form>
   );
 }
