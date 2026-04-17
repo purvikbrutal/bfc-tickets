@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import {
-  confirmBookingPayment,
-  getBookingByOrderId,
-  markEmailSent,
-  markWhatsappSent,
-} from "@/lib/bookings/repository";
-import { sendBookingConfirmationEmail } from "@/lib/email/resend";
+import { confirmBookingPayment, getBookingByOrderId } from "@/lib/bookings/repository";
+import { finalizeConfirmedBooking } from "@/lib/payments/confirmation";
 import { verifyRazorpaySignature } from "@/lib/payments/razorpay";
-import { generateTicketPdf } from "@/lib/tickets/pdf";
-import { buildTicketPresentation } from "@/lib/tickets/presentation";
+import { getRateLimitResult } from "@/lib/server/rate-limit";
 import { paymentVerificationSchema } from "@/lib/validation/booking";
-import { sendWhatsappConfirmation } from "@/lib/whatsapp/service";
-
-type DeliveryResult = {
-  sent: boolean;
-  skipped?: boolean;
-  reason?: string;
-};
 
 export async function POST(request: Request) {
+  const rateLimitResult = getRateLimitResult(request, "payments-verify");
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Too many payment verification attempts. Please wait a minute and try again." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rateLimitResult.retryAfterSeconds),
+        },
+      },
+    );
+  }
+
   try {
     const payload = paymentVerificationSchema.parse(await request.json());
     const booking = await getBookingByOrderId(payload.orderId);
@@ -47,69 +48,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unable to confirm booking." }, { status: 500 });
     }
 
-    const ticket = await buildTicketPresentation(confirmedBooking);
-
-    let pdfBuffer: Buffer | null = null;
-
-    try {
-      pdfBuffer = await generateTicketPdf(confirmedBooking);
-    } catch (error) {
-      console.error("PDF generation warning:", error);
-    }
-
-    let emailResult: DeliveryResult = confirmedBooking.emailSentAt
-      ? { sent: true, skipped: true, reason: "Email already sent." }
-      : { sent: false };
-
-    if (!confirmedBooking.emailSentAt) {
-      try {
-        emailResult = await sendBookingConfirmationEmail({
-          booking: confirmedBooking,
-          pdfBuffer,
-        });
-      } catch (error) {
-        emailResult = {
-          sent: false,
-          reason: error instanceof Error ? error.message : "Email delivery failed after payment verification.",
-        };
-      }
-    }
-
-    if (emailResult.sent && !confirmedBooking.emailSentAt) {
-      await markEmailSent(confirmedBooking.id);
-    }
-
-    let whatsappResult: DeliveryResult = confirmedBooking.whatsappSentAt
-      ? { sent: true, skipped: true, reason: "WhatsApp already sent." }
-      : { sent: false };
-
-    if (!confirmedBooking.whatsappSentAt) {
-      try {
-        whatsappResult = await sendWhatsappConfirmation({
-          booking: confirmedBooking,
-        });
-      } catch (error) {
-        whatsappResult = {
-          sent: false,
-          reason: error instanceof Error ? error.message : "WhatsApp delivery failed after payment verification.",
-        };
-      }
-    }
-
-    if (whatsappResult.sent && !confirmedBooking.whatsappSentAt) {
-      await markWhatsappSent(confirmedBooking.id);
-    }
+    const confirmation = await finalizeConfirmedBooking({
+      booking: confirmedBooking,
+      source: "verify",
+    });
 
     return NextResponse.json({
       success: true,
       bookingId: confirmedBooking.bookingId,
-      ticketPageUrl: ticket.pageUrl,
-      ticketDownloadUrl: ticket.downloadUrl,
-      notifications: {
-        email: emailResult,
-        whatsapp: whatsappResult,
-        pdfReady: Boolean(pdfBuffer),
-      },
+      ticketPageUrl: confirmation.ticketPageUrl,
+      ticketDownloadUrl: confirmation.ticketDownloadUrl,
+      notifications: confirmation.notifications,
     });
   } catch (error) {
     if (error instanceof ZodError) {

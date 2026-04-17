@@ -1,13 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/shared/logo";
-
-const footerLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/purvik_brutal", external: true },
-  { label: "YouTube", href: "https://www.youtube.com/@Purvik_Brutal", external: true },
-  { label: "Terms", href: "/terms", external: false },
-  { label: "Privacy", href: "/privacy", external: false },
-] as const;
+import { BUSINESS } from "@/config/business";
 
 export function FooterSection() {
   return (
@@ -15,11 +9,13 @@ export function FooterSection() {
       <div className="section-shell flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-4">
           <Logo />
-          <p className="text-sm text-white/46">brutalfightclub@gmail.com | +91 7680895508</p>
+          <p className="text-sm text-white/46">
+            {BUSINESS.contactEmail} | {BUSINESS.contactPhone}
+          </p>
         </div>
 
         <div className="flex flex-col gap-3 text-sm text-white/56 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          {footerLinks.map((link) => (
+          {BUSINESS.socialLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}

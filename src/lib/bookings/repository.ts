@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 
 import { getDb } from "@/lib/db";
+import { generateUniqueTicketCode } from "@/lib/tickets/generate";
 
 type DbBookingRecord = {
   id: string;
@@ -131,10 +132,6 @@ function generateTicketToken() {
   return crypto.randomBytes(24).toString("hex");
 }
 
-function generateSeatTicketCode() {
-  return `TKT-${crypto.randomUUID().toUpperCase()}`;
-}
-
 function normalizeAttendeeName(attendeeName?: string | null) {
   return attendeeName?.trim() ? attendeeName.trim() : null;
 }
@@ -157,6 +154,7 @@ async function getTicketRecordsByBookingId(bookingId: string) {
 
 async function insertTicketRecord(bookingId: string, attendeeName?: string | null) {
   const sql = getDb();
+  const ticketCode = await generateUniqueTicketCode();
   const [record] = await sql<DbTicketRecord[]>`
     insert into tickets (
       booking_id,
@@ -165,7 +163,7 @@ async function insertTicketRecord(bookingId: string, attendeeName?: string | nul
     )
     values (
       ${bookingId},
-      ${generateSeatTicketCode()},
+      ${ticketCode},
       ${normalizeAttendeeName(attendeeName)}
     )
     returning *
@@ -232,6 +230,11 @@ export async function getBookingByBookingId(bookingId: string) {
 }
 
 export async function createPendingBooking(input: PendingBookingInput) {
+  // Pre-generate unique codes outside the transaction to avoid cross-connection conflicts
+  const ticketCodes = await Promise.all(
+    Array.from({ length: input.quantity }, () => generateUniqueTicketCode()),
+  );
+
   const sql = getDb();
   const booking = await sql.begin(async (transaction) => {
     const [record] = await transaction<DbBookingRecord[]>`
@@ -264,7 +267,7 @@ export async function createPendingBooking(input: PendingBookingInput) {
 
     const attendeeNames = normalizeAttendeeNames(input.attendeeNames, input.quantity);
 
-    for (const attendeeName of attendeeNames) {
+    for (let i = 0; i < attendeeNames.length; i++) {
       await transaction<DbTicketRecord[]>`
         insert into tickets (
           booking_id,
@@ -273,8 +276,8 @@ export async function createPendingBooking(input: PendingBookingInput) {
         )
         values (
           ${record.id},
-          ${generateSeatTicketCode()},
-          ${attendeeName}
+          ${ticketCodes[i]!},
+          ${attendeeNames[i]}
         )
       `;
     }

@@ -3,10 +3,8 @@ import crypto from "node:crypto";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { buffer } from "micro";
 
-import { confirmBooking, markEmailSent, markWhatsappSent, type BookingWithTickets } from "@/lib/bookings/repository";
-import { sendBookingConfirmationEmail as sendTicketEmail } from "@/lib/email/resend";
-import { syncConfirmedBookingToSheets } from "@/lib/sheets";
-import { sendWhatsappConfirmation } from "@/lib/whatsapp/service";
+import { confirmBooking } from "@/lib/bookings/repository";
+import { finalizeConfirmedBooking } from "@/lib/payments/confirmation";
 
 type RazorpayWebhookEvent = {
   event?: string;
@@ -25,37 +23,6 @@ export const config = {
     bodyParser: false,
   },
 };
-
-function queuePostConfirmationMirrors(input: {
-  booking: BookingWithTickets;
-  emailSentAt: Date | null;
-}) {
-  const mirroredBooking: BookingWithTickets = {
-    ...input.booking,
-    emailSentAt: input.emailSentAt ?? input.booking.emailSentAt,
-  };
-
-  setImmediate(() => {
-    void syncConfirmedBookingToSheets({
-      booking: mirroredBooking,
-      emailSentAt: mirroredBooking.emailSentAt,
-    }).catch((error) => {
-      console.error("Google Sheets sync failed:", error);
-    });
-
-    if (!mirroredBooking.whatsappSentAt) {
-      void sendWhatsappConfirmation({ booking: mirroredBooking })
-        .then(async (result) => {
-          if (result.sent) {
-            await markWhatsappSent(mirroredBooking.id);
-          }
-        })
-        .catch((error) => {
-          console.error("WhatsApp confirmation failed:", error);
-        });
-    }
-  });
-}
 
 function verifyWebhookSignature(rawBody: Buffer, signature: string) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -138,35 +105,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: "Booking order was not found." });
     }
 
-    const emailWasAlreadySent = Boolean(booking.emailSentAt);
-    const emailResult = emailWasAlreadySent
-      ? { sent: true, skipped: true as const, reason: "Email already sent." }
-      : await sendTicketEmail({
-          booking,
-        });
-
-    const effectiveEmailSentAt = booking.emailSentAt ?? (emailResult.sent ? new Date() : null);
-
-    if (emailResult.sent && !booking.emailSentAt) {
-      await markEmailSent(booking.id);
-    }
-
-    if (emailWasAlreadySent || emailResult.sent) {
-      queuePostConfirmationMirrors({
-        booking,
-        emailSentAt: effectiveEmailSentAt,
+    if (booking.paymentSignature && (booking.emailSentAt || booking.whatsappSentAt)) {
+      return res.status(200).json({
+        ok: true,
+        status: "verified_by_client",
+        bookingId: booking.bookingId,
+        fallback: false,
       });
     }
 
+    const confirmation = await finalizeConfirmedBooking({
+      booking,
+      source: "webhook",
+    });
+
     return res.status(200).json({
       ok: true,
-      status: emailWasAlreadySent ? "already_confirmed" : "confirmed",
+      status: booking.emailSentAt || booking.whatsappSentAt ? "already_confirmed" : "confirmed",
       bookingId: booking.bookingId,
-      email: emailResult,
-      mirrors: {
-        sheets: emailWasAlreadySent || emailResult.sent ? "queued" : "skipped",
-        whatsapp: emailWasAlreadySent || emailResult.sent ? "queued" : "skipped",
-      },
+      fallback: true,
+      notifications: confirmation.notifications,
     });
   } catch (error) {
     return res.status(500).json({

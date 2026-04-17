@@ -53,6 +53,10 @@ export function HeroSection() {
               </span>
             </h1>
 
+            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/50 sm:text-[0.72rem]">
+              Season 1
+            </p>
+
             <div className="mx-auto max-w-3xl space-y-3">
               <p className="text-balance text-base leading-7 text-white/62 sm:text-lg sm:leading-8">
                 in collaboration with {EVENT.collaboration}

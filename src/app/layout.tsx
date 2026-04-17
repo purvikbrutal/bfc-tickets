@@ -1,27 +1,38 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import "./globals.css";
+import { SITE_METADATA } from "@/config/business";
+import { TrackPageView } from "@/components/track-pageview";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+if (!siteUrl) {
+  throw new Error("NEXT_PUBLIC_SITE_URL is not set");
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Brutal Fight Club | Fight Night",
-  description:
-    "Premium single-event ticket booking website for Brutal Fight Club's Fight Night on April 26, 2026.",
+  title: SITE_METADATA.title,
+  description: SITE_METADATA.description,
   openGraph: {
-    title: "Brutal Fight Club | Fight Night",
-    description:
-      "A sleek, cinematic boxing event landing page with premium ticket booking, payment flow, and digital ticket delivery.",
+    title: SITE_METADATA.title,
+    description: SITE_METADATA.description,
     url: siteUrl,
-    siteName: "Brutal Fight Club",
+    siteName: SITE_METADATA.title,
     type: "website",
+    images: [
+      {
+        url: "/ticket-image.png",
+        alt: SITE_METADATA.openGraphImageAlt,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Brutal Fight Club | Fight Night",
-    description:
-      "Reserve your place for Fight Night on April 26, 2026. Premium booking flow, digital tickets, and elegant fight-night design.",
+    title: SITE_METADATA.title,
+    description: SITE_METADATA.description,
+    images: ["/ticket-image.png"],
   },
 };
 
@@ -32,7 +43,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-background text-foreground antialiased">{children}</body>
+      <head>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
+      </head>
+      <body className="bg-background text-foreground antialiased">
+        <TrackPageView />
+        {children}
+      </body>
     </html>
   );
 }

@@ -84,17 +84,26 @@ npm run dev
 Create `.env.local` with:
 
 ```bash
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# Client-safe values
+NEXT_PUBLIC_SITE_URL=https://www.brutalfightclub.com
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
+NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL=
+NEXT_PUBLIC_VENUE_DIRECTIONS_URL=
+
+# Server-only values
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bfc_event
 
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxx
+RAZORPAY_WEBHOOK_SECRET=whsec_xxxxxxxxxx
 
 RESEND_API_KEY=re_xxxxxxxxxx
 EMAIL_FROM=BFC Tickets <tickets@example.com>
 
-NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL=
-NEXT_PUBLIC_VENUE_DIRECTIONS_URL=
+GOOGLE_SHEETS_SPREADSHEET_ID=
+GOOGLE_SHEETS_SHEET_NAME=Bookings
+GOOGLE_SERVICE_ACCOUNT_EMAIL=
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=
 
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=

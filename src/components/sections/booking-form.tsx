@@ -41,6 +41,8 @@ type VerifyResponse = {
   error?: string;
 };
 
+const TEST_COUPON_CODE = "BFCTEST";
+
 // Razorpay checkout.js must be loaded globally, ideally in src/app/layout.tsx:
 // <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 export function BookingForm({ onClose }: BookingFormProps) {
@@ -48,9 +50,13 @@ export function BookingForm({ onClose }: BookingFormProps) {
   const [formState, setFormState] = useState<FormState>(initialState);
   const [submissionPhase, setSubmissionPhase] = useState<SubmissionPhase>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [couponStatus, setCouponStatus] = useState<"idle" | "applied" | "error">("idle");
 
   const deferredQuantity = useDeferredValue(formState.quantity);
-  const totalLabel = formatRupees(EVENT.price * deferredQuantity);
+  const totalLabel = formatRupees(appliedCouponCode === TEST_COUPON_CODE ? 2 : EVENT.price * deferredQuantity);
   const isBusy = submissionPhase !== "idle";
   const statusMessage =
     submissionPhase === "creating-order"
@@ -89,6 +95,22 @@ export function BookingForm({ onClose }: BookingFormProps) {
     });
   }
 
+  function handleApplyCoupon() {
+    const normalizedCouponCode = couponInput.trim().toUpperCase();
+
+    if (normalizedCouponCode === TEST_COUPON_CODE) {
+      setCouponInput(normalizedCouponCode);
+      setAppliedCouponCode(TEST_COUPON_CODE);
+      setCouponStatus("applied");
+      setCouponMessage("✅ Test discount applied");
+      return;
+    }
+
+    setAppliedCouponCode(null);
+    setCouponStatus("error");
+    setCouponMessage("Invalid code");
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
@@ -112,7 +134,10 @@ export function BookingForm({ onClose }: BookingFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({
+          ...formState,
+          couponCode: appliedCouponCode,
+        }),
       });
 
       const orderData = (await orderResponse.json().catch(() => null)) as OrderResponse | null;
@@ -255,6 +280,46 @@ export function BookingForm({ onClose }: BookingFormProps) {
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="space-y-2.5">
+        <span className="text-sm font-medium text-white/74">Coupon Code</span>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input
+            value={couponInput}
+            onChange={(event) => {
+              setCouponInput(event.target.value.toUpperCase());
+              setAppliedCouponCode(null);
+              if (couponStatus !== "idle") {
+                setCouponStatus("idle");
+                setCouponMessage(null);
+              }
+            }}
+            disabled={isBusy}
+            className="w-full rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none placeholder:text-white/22 focus:border-rose-200/34 focus:bg-white/[0.07]"
+            placeholder="Enter coupon code"
+          />
+          <button
+            type="button"
+            onClick={handleApplyCoupon}
+            disabled={isBusy}
+            className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white/86 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Apply
+          </button>
+        </div>
+
+        {couponMessage ? (
+          <p
+            className={
+              couponStatus === "applied"
+                ? "text-xs leading-6 text-emerald-200/88"
+                : "text-xs leading-6 text-rose-100/88"
+            }
+          >
+            {couponMessage}
+          </p>
+        ) : null}
       </div>
 
       <div className="rounded-[26px] border border-white/8 bg-white/[0.03] px-4 py-4 sm:px-5">

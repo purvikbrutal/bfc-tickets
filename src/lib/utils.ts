@@ -10,7 +10,13 @@ export function formatRupees(value: number) {
 }
 
 export function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!siteUrl) {
+    throw new Error("NEXT_PUBLIC_SITE_URL is not set");
+  }
+
+  return siteUrl;
 }
 
 export function buildTicketPagePath(bookingId: string, token: string) {

@@ -22,9 +22,19 @@ export async function GET(request: Request, { params }: TicketRouteProps) {
       return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
     }
 
-    const pdfBuffer = await generateTicketPdf(booking);
+    const firstTicket = booking.tickets[0];
+    const ticketCode = firstTicket?.ticketCode ?? booking.bookingId ?? bookingId;
+    const attendeeName = firstTicket?.attendeeName ?? booking.fullName;
+    const pdfBuffer = await generateTicketPdf(booking, ticketCode, attendeeName);
 
-    return new NextResponse(pdfBuffer, {
+    if (!pdfBuffer) {
+      return NextResponse.json(
+        { error: "PDF generation is temporarily unavailable. Please use the digital ticket page." },
+        { status: 503 },
+      );
+    }
+
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="${booking.bookingId ?? bookingId}.pdf"`,

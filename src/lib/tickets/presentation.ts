@@ -42,7 +42,7 @@ export async function buildTicketPresentation(booking: BookingRecord | BookingWi
     eventName: EVENT.name,
     dateLabel: EVENT.dateLabel,
     timeLabel: EVENT.timeLabel,
-    venueName: EVENT.venueName,
+    venueName: EVENT.brand,
     attendeeName: "tickets" in booking ? booking.tickets[0]?.attendeeName ?? booking.fullName : booking.fullName,
     phone: booking.phone,
     quantity: booking.quantity,

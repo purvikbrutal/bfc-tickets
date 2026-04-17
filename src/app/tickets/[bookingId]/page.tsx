@@ -100,7 +100,7 @@ export default async function TicketPage({ params, searchParams }: TicketPagePro
             <aside className="space-y-6">
               <div className="glass-panel rounded-[30px] p-6 sm:p-8">
                 <p className="text-xs uppercase tracking-[0.24em] text-white/42">Venue</p>
-                <p className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em]">{EVENT.venueName}</p>
+                <p className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em]">{EVENT.brand}</p>
                 <p className="mt-5 text-xs uppercase tracking-[0.24em] text-white/42">Total Paid</p>
                 <p className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em]">{totalLabel}</p>
                 <p className="mt-5 text-xs uppercase tracking-[0.24em] text-white/42">Per Ticket</p>
@@ -170,7 +170,7 @@ export default async function TicketPage({ params, searchParams }: TicketPagePro
                     <div className="rounded-[22px] border border-white/10 bg-white/4 p-5">
                       <p className="text-xs uppercase tracking-[0.24em] text-white/42">Venue</p>
                       <p className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em] text-white">
-                        {EVENT.venueName}
+                        {EVENT.brand}
                       </p>
                     </div>
                   </div>
