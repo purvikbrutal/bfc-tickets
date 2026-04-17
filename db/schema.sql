@@ -50,3 +50,14 @@ create trigger bookings_set_updated_at
 before update on bookings
 for each row
 execute procedure set_updated_at();
+
+create table if not exists page_views (
+  id uuid primary key default gen_random_uuid(),
+  path text not null,
+  referrer text,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists page_views_created_at_idx on page_views (created_at desc);
+create index if not exists page_views_path_idx on page_views (path);
