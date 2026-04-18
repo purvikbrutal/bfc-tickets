@@ -25,7 +25,7 @@ export function PhotoGallerySection() {
           <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-8 bg-[linear-gradient(90deg,#050507,transparent)]" />
           <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-8 bg-[linear-gradient(270deg,#050507,transparent)]" />
           <div className="gallery-marquee relative z-10">
-            <div className="gallery-track" style={{ '--gallery-gap': '1rem' } as React.CSSProperties}>
+            <div className="gallery-track" style={{ '--gallery-gap': '1rem', display: 'flex', width: 'max-content', gap: '1rem', paddingLeft: '1rem', paddingRight: '1rem', animation: 'gallery-marquee-right 34s linear infinite' } as React.CSSProperties}>
               {[...EVENT.galleryImages, ...EVENT.galleryImages].map((src, index) => (
                 <article
                   key={`${src}-${index}`}
