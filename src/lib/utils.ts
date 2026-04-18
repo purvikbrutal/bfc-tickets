@@ -23,8 +23,14 @@ export function buildTicketPagePath(bookingId: string, token: string) {
   return `/tickets/${bookingId}?token=${token}`;
 }
 
-export function buildTicketDownloadPath(bookingId: string, token: string) {
-  return `/api/tickets/${bookingId}?token=${token}`;
+export function buildTicketDownloadPath(bookingId: string, token: string, index?: number) {
+  const searchParams = new URLSearchParams({ token });
+
+  if (index !== undefined) {
+    searchParams.set("index", String(index));
+  }
+
+  return `/api/tickets/${bookingId}?${searchParams.toString()}`;
 }
 
 export function buildAbsoluteUrl(pathname: string) {
