@@ -26,7 +26,7 @@ export function PhotoGallerySection() {
             {EVENT.galleryImages.map((src, index) => (
               <article
                 key={src}
-                className="group relative aspect-[0.84] w-full shrink-0 snap-center overflow-hidden rounded-[30px] border border-white/8 bg-black/30"
+                className="group relative aspect-[0.84] w-[90vw] shrink-0 snap-center overflow-hidden rounded-[30px] border border-white/8 bg-black/30"
               >
                 <Image
                   src={src}

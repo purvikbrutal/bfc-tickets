@@ -15,7 +15,7 @@ export function VenueSection() {
 
           <div className="glass-panel rounded-[34px] p-5 sm:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="rounded-[20px] border border-white/10 bg-white/5 p-2.5 text-rose-200 sm:rounded-[22px] sm:p-3">
+              <div className="shrink-0 text-rose-200">
                 <MapPinIcon />
               </div>
               <div className="min-w-0">
