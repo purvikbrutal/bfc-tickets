@@ -41,27 +41,27 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 26 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto flex max-w-5xl flex-col items-center text-center"
+          className="mx-auto flex w-full max-w-5xl flex-col items-center text-center"
         >
-          <div className="space-y-6 sm:space-y-7">
-            <h1 className="font-display text-balance text-5xl font-semibold tracking-[-0.08em] text-white sm:text-6xl lg:text-[5.5rem] lg:leading-[0.92]">
-              <span className="block text-[0.6em] font-medium tracking-[-0.06em] text-white/78 sm:text-[0.56em]">
+          <div className="w-full space-y-5 sm:space-y-7">
+            <h1 className="mx-auto max-w-[19rem] font-display text-balance text-[3.35rem] font-semibold leading-[0.92] tracking-[0.01em] text-white sm:max-w-none sm:text-6xl lg:text-[5.5rem] lg:leading-[0.92]">
+              <span className="block text-[0.5em] font-medium leading-[1.04] tracking-[0.04em] text-white/78 sm:text-[0.56em]">
                 Brutal Fight Club presents
               </span>
-              <span className="mt-3 block">
+              <span className="mt-2.5 block tracking-[0.06em] sm:mt-3">
                 Fight Night
               </span>
             </h1>
 
-            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/50 sm:text-[0.72rem]">
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-white/50 sm:text-[0.72rem] sm:tracking-[0.28em]">
               Season 1
             </p>
 
-            <div className="mx-auto max-w-3xl space-y-3">
-              <p className="text-balance text-base leading-7 text-white/62 sm:text-lg sm:leading-8">
+            <div className="mx-auto max-w-3xl space-y-3 text-center">
+              <p className="mx-auto max-w-[18rem] text-balance text-[0.98rem] leading-7 text-white/62 sm:max-w-none sm:text-lg sm:leading-8">
                 in collaboration with {EVENT.collaboration}
               </p>
-              <div className="inline-flex items-center justify-center rounded-full border border-rose-300/16 bg-rose-400/10 px-4 py-2 text-sm font-medium tracking-[0.02em] text-rose-100/88 shadow-[0_12px_40px_rgba(120,20,34,0.18)]">
+              <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-y-1.5 rounded-full border border-rose-300/16 bg-rose-400/10 px-4 py-2 text-center text-xs font-medium tracking-[0.02em] text-rose-100/88 shadow-[0_12px_40px_rgba(120,20,34,0.18)] sm:text-sm">
                 <span className="text-white/68">brought to you by</span>
                 <span className="mx-2 h-3.5 w-px bg-white/12" aria-hidden="true" />
                 <span className="font-semibold text-white">{EVENT.presentedBy}</span>
@@ -74,7 +74,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10 flex w-full max-w-xs flex-col gap-3 sm:mt-12 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center"
+            className="mt-10 flex w-full max-w-sm flex-col gap-3 sm:mt-12 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center"
           >
             <button
               type="button"
@@ -99,14 +99,14 @@ export function HeroSection() {
             className="mt-12 sm:mt-14"
           >
             <div className="flex items-center justify-center">
-              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:flex-wrap sm:justify-center sm:gap-0">
+              <div className="flex w-full max-w-[19rem] flex-col items-center gap-4 text-center sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center sm:gap-0">
                 {heroMeta.map((item, index) => (
                   <div key={item.label} className="flex items-center sm:contents">
                     <div className="px-3 sm:px-6">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.34em] text-white/32">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-white/32 sm:tracking-[0.34em]">
                         {item.label}
                       </p>
-                      <p className="mt-2 font-display text-sm font-medium tracking-[0.26em] text-white/74 sm:text-[0.95rem]">
+                      <p className="mt-2 font-display text-[0.96rem] font-medium tracking-[0.14em] text-white/74 sm:text-[0.95rem] sm:tracking-[0.26em]">
                         {item.value}
                       </p>
                     </div>

@@ -21,7 +21,8 @@ export function TicketPricingSection() {
               <TicketIcon className="size-4 text-rose-200" />
               {EVENT.dealLabel}
             </span>
-            <p className="font-display text-5xl font-semibold tracking-[-0.07em] text-white sm:text-6xl">
+            <p className="font-display text-5xl font-semibold tracking-[-0.02em] text-white sm:text-6xl">
+              <span className="mr-3 align-middle text-2xl font-medium line-through text-white/36">{EVENT.originalPriceLabel}</span>
               {EVENT.priceLabel}
             </p>
             <p className="mt-4 text-sm uppercase tracking-[0.28em] text-rose-200/72">{EVENT.discountLabel}</p>

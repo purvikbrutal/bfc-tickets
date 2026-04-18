@@ -21,7 +21,7 @@ export function SectionHeading({
     <div className={cn("max-w-2xl space-y-4", align === "center" ? "mx-auto text-center" : "", className)}>
       <span className="eyebrow">{eyebrow}</span>
       <div className="space-y-3">
-        <h2 className="font-display text-balance text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
+        <h2 className="font-display text-balance text-3xl font-semibold tracking-[0em] text-white sm:text-4xl lg:text-5xl">
           {title}
         </h2>
         {description ? (

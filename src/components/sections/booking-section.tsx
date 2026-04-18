@@ -20,11 +20,11 @@ export function BookingSection() {
             className="max-w-3xl"
           />
 
-          <div className="mt-8 sm:mt-10">
+          <div className="mt-8 flex w-full justify-center sm:mt-10">
             <button
               type="button"
               onClick={openBooking}
-              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_50px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 hover:bg-white/92"
+              className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_50px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 hover:bg-white/92 sm:w-auto sm:max-w-none"
             >
               Book Now
             </button>

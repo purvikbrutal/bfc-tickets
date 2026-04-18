@@ -24,13 +24,13 @@ export function StickyNavbar() {
     <header className="fixed inset-x-0 top-0 z-50 px-3 py-3">
       <div
         className={cn(
-          "section-shell glass-panel rounded-[28px] px-4 py-3 sm:px-6",
+          "section-shell glass-panel rounded-[28px] px-3 py-2.5 sm:px-6 sm:py-3",
           isScrolled ? "border-white/14 bg-black/70" : "border-white/8 bg-black/24",
         )}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center justify-between gap-3 sm:gap-4">
           <Link href="#home" className="shrink-0">
-            <Logo />
+            <Logo className="text-xl tracking-[0.22em] sm:text-[1.7rem] sm:tracking-[0.26em]" />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
@@ -41,7 +41,7 @@ export function StickyNavbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
               onClick={openBooking}
@@ -52,7 +52,7 @@ export function StickyNavbar() {
             <button
               type="button"
               onClick={() => setIsOpen((value) => !value)}
-              className="inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white lg:hidden"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white lg:hidden"
               aria-expanded={isOpen}
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
@@ -83,7 +83,7 @@ export function StickyNavbar() {
                 ))}
                 <button
                   type="button"
-                  className="mt-2 block rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-black"
+                  className="mt-2 block w-full rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-black"
                   onClick={() => {
                     setIsOpen(false);
                     openBooking();

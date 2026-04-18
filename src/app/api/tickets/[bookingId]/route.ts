@@ -10,10 +10,17 @@ type TicketRouteProps = {
 export async function GET(request: Request, { params }: TicketRouteProps) {
   try {
     const { bookingId } = await params;
-    const token = new URL(request.url).searchParams.get("token");
+    const searchParams = new URL(request.url).searchParams;
+    const token = searchParams.get("token");
+    const ticketIndexValue = searchParams.get("index");
+    const ticketIndex = ticketIndexValue === null ? 0 : Number(ticketIndexValue);
 
     if (!token) {
       return NextResponse.json({ error: "Ticket token is required." }, { status: 400 });
+    }
+
+    if (!Number.isInteger(ticketIndex) || ticketIndex < 0) {
+      return NextResponse.json({ error: "Ticket index must be a non-negative integer." }, { status: 400 });
     }
 
     const booking = await getBookingByBookingId(bookingId);
@@ -22,9 +29,14 @@ export async function GET(request: Request, { params }: TicketRouteProps) {
       return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
     }
 
-    const firstTicket = booking.tickets[0];
-    const ticketCode = firstTicket?.ticketCode ?? booking.bookingId ?? bookingId;
-    const attendeeName = firstTicket?.attendeeName ?? booking.fullName;
+    const selectedTicket = booking.tickets[ticketIndex];
+
+    if (!selectedTicket) {
+      return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
+    }
+
+    const ticketCode = selectedTicket.ticketCode;
+    const attendeeName = selectedTicket.attendeeName ?? booking.fullName;
     const pdfBuffer = await generateTicketPdf(booking, ticketCode, attendeeName);
 
     if (!pdfBuffer) {
@@ -37,8 +49,9 @@ export async function GET(request: Request, { params }: TicketRouteProps) {
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${booking.bookingId ?? bookingId}.pdf"`,
+        "Content-Disposition": `attachment; filename="bfc-ticket-${booking.bookingId ?? bookingId}-${ticketCode}.pdf"`,
         "Cache-Control": "private, no-store, max-age=0",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (error) {

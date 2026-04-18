@@ -98,19 +98,19 @@ export function BookingModalProvider({ children }: { children: ReactNode }) {
                       <span className="eyebrow">Booking</span>
                       <h2
                         id="booking-layer-title"
-                        className="mt-4 font-display text-balance text-4xl font-semibold tracking-[-0.06em] text-white sm:text-5xl"
+                        className="mt-4 font-display text-balance text-4xl font-semibold tracking-[-0.02em] text-white sm:text-5xl"
                       >
                         Book now. Save {EVENT.discountLabel}.
                       </h2>
                       <p className="mt-4 max-w-lg text-base leading-7 text-white/62 sm:text-lg">
-                        Secure your seat for {EVENT.name} at {EVENT.priceLabel}. Checkout, ticket delivery, and confirmations
-                        plug in next.
+                        Secure your spot at Fight Night. Limited seats available.
                       </p>
                     </div>
 
                     <div className="rounded-[26px] border border-rose-300/16 bg-rose-400/10 px-5 py-4 text-left sm:min-w-[12rem] sm:text-right">
                       <p className="text-[11px] uppercase tracking-[0.3em] text-rose-100/70">{EVENT.discountLabel}</p>
-                      <p className="mt-2 font-display text-4xl font-semibold tracking-[-0.06em] text-white">
+                      <p className="mt-2 font-display text-4xl font-semibold tracking-[-0.02em] text-white">
+                        <span className="mr-2 align-middle text-xl font-medium line-through text-white/36">{EVENT.originalPriceLabel}</span>
                         {EVENT.priceLabel}
                       </p>
                     </div>

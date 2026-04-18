@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 const sections = [
   {
     title: "Ticket Use",
@@ -21,12 +23,19 @@ const sections = [
   },
 ] as const;
 
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function TermsPage() {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,_#09090b,_#050507)] px-4 py-10 text-white sm:px-6">
       <div className="mx-auto max-w-4xl rounded-[32px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 lg:p-10">
         <p className="eyebrow">Terms</p>
-        <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.06em] sm:text-5xl">
+        <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.02em] sm:text-5xl">
           Terms and Conditions
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-white/64">
@@ -36,7 +45,7 @@ export default function TermsPage() {
         <div className="mt-8 space-y-5">
           {sections.map((section) => (
             <section key={section.title} className="rounded-[26px] border border-white/10 bg-white/4 p-5 sm:p-6">
-              <h2 className="font-display text-2xl font-semibold tracking-[-0.04em]">{section.title}</h2>
+              <h2 className="font-display text-2xl font-semibold tracking-[0em]">{section.title}</h2>
               <p className="mt-3 text-sm leading-7 text-white/62 sm:text-base">{section.body}</p>
             </section>
           ))}

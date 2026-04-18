@@ -13,16 +13,16 @@ export function FaqSection() {
         <div className="grid gap-3 sm:mx-auto sm:max-w-3xl">
           {FAQS.map((item, index) => (
             <Reveal key={item.question} delay={index * 0.04}>
-              <details className="glass-panel group rounded-2xl px-5 py-4 sm:px-7 sm:py-6 backdrop-blur-sm transition-colors hover:bg-white/[0.03]">
-                <summary className="cursor-pointer list-none text-base font-normal tracking-[-0.02em] text-white/85 transition-colors marker:hidden hover:text-white sm:text-lg">
+              <details className="glass-panel group overflow-hidden rounded-2xl px-4 py-4 sm:px-7 sm:py-6 backdrop-blur-sm transition-colors hover:bg-white/[0.03]">
+                <summary className="cursor-pointer list-none text-[0.97rem] font-normal leading-6 tracking-[-0.02em] text-white/85 transition-colors marker:hidden hover:text-white sm:text-lg">
                   <span className="flex items-center justify-between gap-4">
-                    <span className="text-left">{item.question}</span>
+                    <span className="min-w-0 break-words pr-2 text-left">{item.question}</span>
                     <span className="flex-shrink-0 text-white/40 transition-all duration-300 group-open:rotate-45 group-open:text-white/70">
                       +
                     </span>
                   </span>
                 </summary>
-                <p className="mt-4 text-sm font-light leading-7 text-white/55 sm:mt-5 sm:text-base">{item.answer}</p>
+                <p className="mt-4 break-words text-sm font-light leading-7 text-white/55 sm:mt-5 sm:text-base">{item.answer}</p>
               </details>
             </Reveal>
           ))}

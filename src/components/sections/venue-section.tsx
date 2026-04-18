@@ -11,18 +11,18 @@ export function VenueSection() {
     <section id="venue" className="scroll-mt-28 pb-24 sm:scroll-mt-32 sm:pb-28">
       <div className="section-shell grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-10">
         <Reveal className="space-y-6 sm:space-y-7">
-          <SectionHeading eyebrow="Venue" title="Location details land here." description="Find us at Sri Sai Shivani Complex in Hyderabad." />
+          <SectionHeading eyebrow="Venue" title="Venue" description="Find us at Sri Sai Shivani Complex in Hyderabad." />
 
           <div className="glass-panel rounded-[34px] p-5 sm:p-7">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="rounded-[20px] border border-white/10 bg-white/5 p-2.5 text-rose-200 sm:rounded-[22px] sm:p-3">
                 <MapPinIcon />
               </div>
-              <div>
-                <p className="font-display text-[1.75rem] font-semibold leading-[0.96] tracking-[-0.05em] text-white sm:text-2xl">
+              <div className="min-w-0">
+                <p className="font-display text-[1.55rem] font-semibold leading-[0.96] tracking-[-0.01em] text-white sm:text-2xl">
                   {EVENT.venueName}
                 </p>
-                <p className="mt-3 max-w-lg text-sm leading-7 text-white/58 sm:text-base">{EVENT.venueAddress}</p>
+                <p className="mt-3 max-w-lg break-words text-sm leading-7 text-white/58 sm:text-base">{EVENT.venueAddress}</p>
               </div>
             </div>
 
@@ -31,13 +31,13 @@ export function VenueSection() {
                 href={EVENT.venueDirectionsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white/84 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/7"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white/84 hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/7 sm:w-auto"
               >
                 Get Directions
                 <ArrowRightIcon className="size-4" />
               </a>
             ) : (
-              <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-5 py-3 text-sm font-semibold text-white/40">
+              <span className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/4 px-5 py-3 text-sm font-semibold text-white/40 sm:w-auto">
                 Get Directions
                 <ArrowRightIcon className="size-4" />
               </span>
@@ -60,7 +60,7 @@ export function VenueSection() {
                 <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:36px_36px]" />
                 <div className="relative z-10 max-w-sm space-y-3">
                   <span className="eyebrow">Map Placeholder</span>
-                  <h3 className="font-display text-[2rem] font-semibold tracking-[-0.05em] text-white sm:text-3xl">
+                  <h3 className="font-display text-[2rem] font-semibold tracking-[-0.01em] text-white sm:text-3xl">
                     Google Maps block
                   </h3>
                   <p className="text-sm leading-7 text-white/58 sm:text-base">{EVENT.venuePlaceholderNote}</p>

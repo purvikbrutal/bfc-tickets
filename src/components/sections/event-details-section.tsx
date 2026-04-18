@@ -16,7 +16,7 @@ export function EventDetailsSection() {
               {EVENT_DETAILS.map((detail) => (
                 <div key={detail.label} className="space-y-2">
                   <p className="text-[11px] uppercase tracking-[0.26em] text-white/38">{detail.label}</p>
-                  <p className="font-display text-2xl font-semibold tracking-[-0.05em] text-white">{detail.value}</p>
+                  <p className="font-display text-2xl font-semibold tracking-[-0.01em] text-white">{detail.value}</p>
                 </div>
               ))}
             </div>

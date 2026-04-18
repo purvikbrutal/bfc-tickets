@@ -37,6 +37,7 @@ type OrderResponse = {
 
 type VerifyResponse = {
   success?: boolean;
+  ticketDownloadUrl?: string;
   ticketPageUrl?: string;
   error?: string;
 };
@@ -194,11 +195,12 @@ export function BookingForm({ onClose }: BookingFormProps) {
 
             const verifyData = (await verifyResponse.json().catch(() => null)) as VerifyResponse | null;
 
-            if (!verifyResponse.ok || !verifyData?.success || !verifyData.ticketPageUrl) {
+            if (!verifyResponse.ok || !verifyData?.success || !verifyData.ticketPageUrl || !verifyData.ticketDownloadUrl) {
               throw new Error(verifyData?.error ?? "Payment succeeded, but ticket verification failed.");
             }
 
             const ticketUrl = new URL(verifyData.ticketPageUrl, window.location.href);
+            ticketUrl.searchParams.set("download", "1");
             router.replace(`${ticketUrl.pathname}${ticketUrl.search}${ticketUrl.hash}`);
           } catch (verifyError) {
             setSubmissionPhase("idle");
@@ -356,7 +358,8 @@ export function BookingForm({ onClose }: BookingFormProps) {
       <div className="flex flex-col gap-4 rounded-[26px] border border-white/8 bg-white/[0.03] px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-5">
         <div>
           <p className="text-[11px] uppercase tracking-[0.3em] text-white/34">Offer live</p>
-          <p className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-white">
+          <p className="mt-2 font-display text-2xl font-semibold tracking-[0em] text-white">
+            <span className="mr-2 align-middle text-lg font-medium line-through text-white/36">{EVENT.originalPriceLabel}</span>
             {EVENT.priceLabel}
             <span className="ml-3 align-middle text-sm font-medium uppercase tracking-[0.24em] text-rose-100/68">
               {EVENT.discountLabel}
@@ -366,7 +369,7 @@ export function BookingForm({ onClose }: BookingFormProps) {
 
         <div className="sm:text-right">
           <p className="text-[11px] uppercase tracking-[0.3em] text-white/34">Estimated total</p>
-          <p className="mt-2 font-display text-3xl font-semibold tracking-[-0.05em] text-white">{totalLabel}</p>
+          <p className="mt-2 font-display text-3xl font-semibold tracking-[-0.01em] text-white">{totalLabel}</p>
         </div>
       </div>
 

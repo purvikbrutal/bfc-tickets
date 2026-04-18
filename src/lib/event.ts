@@ -14,6 +14,7 @@ export const EVENT = {
   timeLabel: EVENT_CONTENT.timeLabel,
   price: EVENT_CONTENT.price,
   priceLabel: EVENT_CONTENT.priceLabel,
+  originalPriceLabel: EVENT_CONTENT.originalPriceLabel,
   discountLabel: EVENT_CONTENT.discountLabel,
   dealLabel: EVENT_CONTENT.dealLabel,
   category: EVENT_CONTENT.category,
