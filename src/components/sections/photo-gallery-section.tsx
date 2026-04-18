@@ -21,25 +21,30 @@ export function PhotoGallerySection() {
           />
         </Reveal>
 
-        <Reveal className="sm:hidden">
-          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-2 touch-pan-x [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
-            {EVENT.galleryImages.map((src, index) => (
-              <article
-                key={src}
-                className="group relative aspect-[0.84] w-[90vw] shrink-0 snap-center overflow-hidden rounded-[30px] border border-white/8 bg-black/30"
-              >
-                <Image
-                  src={src}
-                  alt={`BFC fight-night gallery image ${(index + 1).toString().padStart(2, "0")}`}
-                  width={720}
-                  height={860}
-                  priority={index === 0}
-                  sizes="(max-width: 639px) 100vw, 26rem"
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.24))]" />
-              </article>
-            ))}
+        <Reveal className="relative sm:hidden overflow-hidden py-2">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-8 bg-[linear-gradient(90deg,#050507,transparent)]" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-8 bg-[linear-gradient(270deg,#050507,transparent)]" />
+          <div className="gallery-marquee relative z-10">
+            <div className="gallery-track" style={{ '--gallery-gap': '1rem' } as React.CSSProperties}>
+              {[...EVENT.galleryImages, ...EVENT.galleryImages].map((src, index) => (
+                <article
+                  key={`${src}-${index}`}
+                  className="group relative aspect-[0.84] flex-none w-[76vw] overflow-hidden rounded-[30px] border border-white/8 bg-black/30"
+                  style={{ minWidth: 'calc(76vw + 1rem)' }}
+                >
+                  <Image
+                    src={src}
+                    alt={`BFC fight-night gallery image ${((index % EVENT.galleryImages.length) + 1).toString().padStart(2, "0")}`}
+                    width={360}
+                    height={430}
+                    priority={index === 0}
+                    sizes="(max-width: 639px) 76vw, 26rem"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.24))]" />
+                </article>
+              ))}
+            </div>
           </div>
         </Reveal>
       </div>
