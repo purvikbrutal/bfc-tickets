@@ -33,26 +33,6 @@ function passcodesMatch(input: string, expected: string) {
 }
 
 export async function POST(request: Request) {
-  const rateLimitResult = await getRateLimitResult(request, "admin-login", {
-    requests: 5,
-    window: "15 m",
-  });
-
-  if (!rateLimitResult.allowed) {
-    return NextResponse.redirect(
-      redirectToAdmin(request, {
-        error: "rate-limit",
-        retryAfter: String(rateLimitResult.retryAfterSeconds),
-      }),
-      {
-        headers: {
-          "Retry-After": String(rateLimitResult.retryAfterSeconds),
-        },
-        status: 303,
-      },
-    );
-  }
-
   const expectedPasscode = process.env.ADMIN_PASSCODE?.trim();
 
   if (!expectedPasscode) {
@@ -64,6 +44,26 @@ export async function POST(request: Request) {
   const passcode = typeof passcodeValue === "string" ? passcodeValue : "";
 
   if (!passcodesMatch(passcode, expectedPasscode)) {
+    const rateLimitResult = await getRateLimitResult(request, "admin-login-failed", {
+      requests: 5,
+      window: "15 m",
+    });
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.redirect(
+        redirectToAdmin(request, {
+          error: "rate-limit",
+          retryAfter: String(rateLimitResult.retryAfterSeconds),
+        }),
+        {
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+          },
+          status: 303,
+        },
+      );
+    }
+
     return NextResponse.redirect(redirectToAdmin(request, { error: "invalid-passcode" }), {
       status: 303,
     });
