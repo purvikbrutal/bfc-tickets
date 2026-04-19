@@ -8,21 +8,21 @@ import { getRateLimitResult } from "@/lib/server/rate-limit";
 import { paymentVerificationSchema } from "@/lib/validation/booking";
 
 export async function POST(request: Request) {
-  const rateLimitResult = getRateLimitResult(request, "payments-verify");
-
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: "Too many payment verification attempts. Please wait a minute and try again." },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(rateLimitResult.retryAfterSeconds),
-        },
-      },
-    );
-  }
-
   try {
+    const rateLimitResult = await getRateLimitResult(request, "payments-verify");
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many payment verification attempts. Please wait a minute and try again." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+          },
+        },
+      );
+    }
+
     const payload = paymentVerificationSchema.parse(await request.json());
     const booking = await getBookingByOrderId(payload.orderId);
 

@@ -9,21 +9,21 @@ import { bookingRequestSchema } from "@/lib/validation/booking";
 import { formatRupees } from "@/lib/utils";
 
 export async function POST(request: Request) {
-  const rateLimitResult = getRateLimitResult(request, "payments-order");
-
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: "Too many booking attempts. Please wait a minute and try again." },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(rateLimitResult.retryAfterSeconds),
-        },
-      },
-    );
-  }
-
   try {
+    const rateLimitResult = await getRateLimitResult(request, "payments-order");
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many booking attempts. Please wait a minute and try again." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+          },
+        },
+      );
+    }
+
     const rawPayload = (await request.json()) as Record<string, unknown>;
     const payload = bookingRequestSchema.parse(rawPayload);
     const couponCode =
