@@ -1,16 +1,22 @@
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
-};
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 type RateLimitResult = {
   allowed: boolean;
   retryAfterSeconds: number;
 };
 
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 10;
-const requestCounts = new Map<string, RateLimitEntry>();
+type RateLimitOptions = {
+  requests?: number;
+  window?: `${number} ${"s" | "m" | "h" | "d"}`;
+};
+
+const RATE_LIMIT_REQUESTS = 10;
+const RATE_LIMIT_WINDOW = "1 m";
+const DEFAULT_RATE_LIMIT_PREFIX = "bfc:ratelimit";
+
+const rateLimitCaches = new Map<string, Map<string, number>>();
+const ratelimits = new Map<string, Ratelimit>();
 
 function getClientIp(request: Request) {
   const forwardedFor =
@@ -22,45 +28,56 @@ function getClientIp(request: Request) {
   return forwardedFor.split(",")[0]?.trim() || "unknown";
 }
 
-function pruneExpiredEntries(now: number) {
-  for (const [key, entry] of requestCounts.entries()) {
-    if (entry.resetAt <= now) {
-      requestCounts.delete(key);
-    }
-  }
+function getRateLimitConfig(options?: RateLimitOptions) {
+  return {
+    requests: options?.requests ?? RATE_LIMIT_REQUESTS,
+    window: options?.window ?? RATE_LIMIT_WINDOW,
+  };
 }
 
-export function getRateLimitResult(request: Request, scope: string): RateLimitResult {
-  const now = Date.now();
-  pruneExpiredEntries(now);
+function getRatelimit(config: ReturnType<typeof getRateLimitConfig>) {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 
-  const key = `${scope}:${getClientIp(request)}`;
-  const current = requestCounts.get(key);
+  if (!redisUrl || !redisToken) {
+    throw new Error("Upstash Redis is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.");
+  }
 
-  if (!current || current.resetAt <= now) {
-    requestCounts.set(key, {
-      count: 1,
-      resetAt: now + WINDOW_MS,
+  const cacheKey = `${config.requests}:${config.window}`;
+  const ephemeralCache = rateLimitCaches.get(cacheKey) ?? new Map<string, number>();
+
+  if (!rateLimitCaches.has(cacheKey)) {
+    rateLimitCaches.set(cacheKey, ephemeralCache);
+  }
+
+  let ratelimit = ratelimits.get(cacheKey);
+
+  if (!ratelimit) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(config.requests, config.window),
+      analytics: false,
+      ephemeralCache,
+      prefix: `${DEFAULT_RATE_LIMIT_PREFIX}:${cacheKey}`,
     });
 
-    return {
-      allowed: true,
-      retryAfterSeconds: 0,
-    };
+    ratelimits.set(cacheKey, ratelimit);
   }
 
-  if (current.count >= MAX_REQUESTS) {
-    return {
-      allowed: false,
-      retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
-    };
-  }
+  return ratelimit;
+}
 
-  current.count += 1;
-  requestCounts.set(key, current);
+export async function getRateLimitResult(
+  request: Request,
+  scope: string,
+  options?: RateLimitOptions,
+): Promise<RateLimitResult> {
+  const config = getRateLimitConfig(options);
+  const key = `${scope}:${getClientIp(request)}`;
+  const result = await getRatelimit(config).limit(key);
 
   return {
-    allowed: true,
-    retryAfterSeconds: 0,
+    allowed: result.success,
+    retryAfterSeconds: result.success ? 0 : Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
   };
 }

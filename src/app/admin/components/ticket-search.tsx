@@ -28,7 +28,8 @@ function formatRupees(paise: number) {
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "—";
+  if (!value) return "-";
+
   return new Date(value).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -47,6 +48,7 @@ export function TicketSearch() {
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const query = code.trim().toUpperCase();
+
     if (!query) return;
 
     setLoading(true);
@@ -77,68 +79,70 @@ export function TicketSearch() {
         Ticket Lookup
       </h2>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
           placeholder="Enter 6-char code e.g. BFC4X9"
           maxLength={6}
-          className="flex-1 max-w-xs px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 font-mono text-sm uppercase"
+          className="w-full rounded border border-gray-700 bg-gray-800 px-3 py-2 font-mono text-sm uppercase text-white placeholder-gray-500 focus:border-gray-500 focus:outline-none sm:max-w-xs"
         />
         <button
           type="submit"
           disabled={loading || code.length !== 6}
-          className="px-4 py-2 bg-white text-gray-900 font-semibold rounded text-sm hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full rounded bg-white px-4 py-2 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
-          {loading ? "Searching…" : "Search"}
+          {loading ? "Searching..." : "Search"}
         </button>
       </form>
 
       {error && (
-        <p className="text-red-400 text-sm">{error}</p>
+        <p className="text-sm text-red-400">{error}</p>
       )}
 
       {result !== null && !result.found && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <p className="text-gray-400 text-sm">No ticket found for code <span className="font-mono text-white">{code}</span>.</p>
+        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+          <p className="text-sm text-gray-400">
+            No ticket found for code <span className="font-mono text-white">{code}</span>.
+          </p>
         </div>
       )}
 
       {result?.found && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-4">
-          {/* Status badge */}
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 rounded-lg border border-gray-800 bg-gray-900 p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-xs text-gray-500 mb-1">Ticket Code</p>
-              <p className="font-mono text-2xl font-bold text-white tracking-widest">{result.ticket.code}</p>
+              <p className="mb-1 text-xs text-gray-500">Ticket Code</p>
+              <p className="font-mono text-xl font-bold tracking-[0.28em] text-white sm:text-2xl">
+                {result.ticket.code}
+              </p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               {isPaid ? (
-                <span className="inline-block px-3 py-1.5 rounded bg-green-900/60 text-green-300 font-bold text-sm tracking-wide">
-                  ✅ PAID
+                <span className="inline-block rounded bg-green-900/60 px-3 py-1.5 text-sm font-bold tracking-wide text-green-300">
+                  PAID
                 </span>
               ) : (
-                <span className="inline-block px-3 py-1.5 rounded bg-red-900/60 text-red-300 font-bold text-sm tracking-wide">
-                  ❌ UNPAID
+                <span className="inline-block rounded bg-red-900/60 px-3 py-1.5 text-sm font-bold tracking-wide text-red-300">
+                  UNPAID
                 </span>
               )}
             </div>
           </div>
 
-          {/* Details grid */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs text-gray-500">Name</p>
-              <p className="text-white font-medium">{result.ticket.fullName}</p>
+              <p className="font-medium text-white">{result.ticket.fullName}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Attendee</p>
-              <p className="text-white font-medium">{result.ticket.attendeeName}</p>
+              <p className="font-medium text-white">{result.ticket.attendeeName}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Email</p>
-              <p className="text-gray-300">{result.ticket.email}</p>
+              <p className="break-words text-gray-300">{result.ticket.email}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Phone</p>
@@ -146,19 +150,19 @@ export function TicketSearch() {
             </div>
             <div>
               <p className="text-xs text-gray-500">Amount Paid</p>
-              <p className="text-white font-medium">{formatRupees(result.ticket.amountPaise)}</p>
+              <p className="font-medium text-white">{formatRupees(result.ticket.amountPaise)}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Booking ID</p>
-              <p className="font-mono text-gray-300 text-xs">{result.ticket.bookingId ?? "—"}</p>
+              <p className="break-all font-mono text-xs text-gray-300">{result.ticket.bookingId ?? "-"}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Booked At</p>
-              <p className="text-gray-300 text-xs">{formatDate(result.ticket.bookingCreatedAt)}</p>
+              <p className="text-xs text-gray-300">{formatDate(result.ticket.bookingCreatedAt)}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Confirmed At</p>
-              <p className="text-gray-300 text-xs">{formatDate(result.ticket.confirmedAt)}</p>
+              <p className="text-xs text-gray-300">{formatDate(result.ticket.confirmedAt)}</p>
             </div>
           </div>
         </div>

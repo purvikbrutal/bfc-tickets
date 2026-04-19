@@ -2,10 +2,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { getDb } from "@/lib/db";
+import { ADMIN_SESSION_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/server/admin-session";
 
 export async function GET(request: Request) {
   const store = await cookies();
-  if (store.get("admin_session")?.value !== "1") {
+  const hasValidSession = await verifyAdminSessionToken(store.get(ADMIN_SESSION_COOKIE_NAME)?.value);
+
+  if (!hasValidSession) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
